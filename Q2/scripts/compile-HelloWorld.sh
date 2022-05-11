@@ -1,30 +1,33 @@
 #!/bin/bash
 
-cd contracts/circuits
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+CIRCUIT_DIR=$SCRIPT_DIR/../contracts/circuits
+BUILD_DIR=$CIRCUIT_DIR/build_HelloWorld_groth
 
-mkdir HelloWorld
-
-if [ -f ./powersOfTau28_hez_final_10.ptau ]; then
-    echo "powersOfTau28_hez_final_10.ptau already exists. Skipping."
+if [ -d "$BUILD_DIR" ]
+then
+    echo "Build directory exists"
 else
-    echo 'Downloading powersOfTau28_hez_final_10.ptau'
-    wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_10.ptau
+    echo "Build directory doesn't exits, making it"
+    mkdir $BUILD_DIR
 fi
 
-echo "Compiling HelloWorld.circom..."
+PPoT_PATH=$SCRIPT_DIR/../../powersOfTau28_hez_final_11.ptau
 
-# compile circuit
+if [ -f $PPoT_PATH ]; then
+    echo "powersOfTau28_hez_final_11.ptau already exists. Skipping."
+else
+    echo "Where is powersOfTau28_hez_final_11.ptau? It's not in this directory!" 
+fi
 
-circom HelloWorld.circom --r1cs --wasm --sym -o HelloWorld
-snarkjs r1cs info HelloWorld/HelloWorld.r1cs
+echo "Compiling HelloWorld"
+
+circom $CIRCUIT_DIR/HelloWorld.circom --r1cs --wasm --sym -o $BUILD_DIR
+snarkjs r1cs info $BUILD_DIR/HelloWorld.r1cs
 
 # Start a new zkey and make a contribution
 
-snarkjs groth16 setup HelloWorld/HelloWorld.r1cs powersOfTau28_hez_final_10.ptau HelloWorld/circuit_0000.zkey
-snarkjs zkey contribute HelloWorld/circuit_0000.zkey HelloWorld/circuit_final.zkey --name="1st Contributor Name" -v -e="random text"
-snarkjs zkey export verificationkey HelloWorld/circuit_final.zkey HelloWorld/verification_key.json
-
-# generate solidity contract
-snarkjs zkey export solidityverifier HelloWorld/circuit_final.zkey ../HelloWorldVerifier.sol
-
-cd ../..
+snarkjs groth16 setup $BUILD_DIR/HelloWorld.r1cs $PPoT_PATH $BUILD_DIR/circuit_00.zkey
+snarkjs zkey contribute $BUILD_DIR/circuit_00.zkey $BUILD_DIR/circuit_final.zkey --name="bgd"
+snarkjs zkey export verificationkey $BUILD_DIR/circuit_final.zkey $BUILD_DIR/verification_key.json
+snarkjs zkey export solidityverifier $BUILD_DIR/circuit_final.zkey $CIRCUIT_DIR/HelloWorldVerifier.sol

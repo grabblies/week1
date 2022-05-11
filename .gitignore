@@ -3,6 +3,11 @@ node_modules
 coverage
 coverage.json
 typechain
+*.ptau
+build*/
+.gitignore
+*.r1cs
+*.wasm
 
 #Hardhat files
 cache

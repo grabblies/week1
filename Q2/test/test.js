@@ -35,7 +35,8 @@ describe("HelloWorld", function () {
 
     it("Should return true for correct proof", async function () {
         //[assignment] Add comments to explain what each line is doing
-        const { proof, publicSignals } = await groth16.fullProve({"a":"1","b":"2"}, "contracts/circuits/HelloWorld/HelloWorld_js/HelloWorld.wasm","contracts/circuits/HelloWorld/circuit_final.zkey");
+        
+        const { proof, publicSignals } = await groth16.fullProve({"a":"1","b":"2"}, "contracts/circuits/build_HelloWorld_groth/HelloWorld_js/HelloWorld.wasm","contracts/circuits/build_HelloWorld_groth/circuit_final.zkey");
 
         console.log('1x2 =',publicSignals[0]);
 
@@ -63,13 +64,17 @@ describe("HelloWorld", function () {
 
 
 describe("Multiplier3 with Groth16", function () {
+    let Verifier;
+    let verifier;
 
     beforeEach(async function () {
-        //[assignment] insert your script here
+        Verifier = await ethers.getContractFactory("Multiplier3Verifier")
+        verifier = await Verifier.deploy();
+        await verifier.deployed();
     });
 
     it("Should return true for correct proof", async function () {
-        //[assignment] insert your script here
+        
     });
     it("Should return false for invalid proof", async function () {
         //[assignment] insert your script here
